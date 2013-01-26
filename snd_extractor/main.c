@@ -9,6 +9,8 @@ LRESULT CALLBACK MainProc(HWND Dlg,UINT message,WPARAM wParam,LPARAM lParam);
 void open_snd(HWND hWin);
 void SetFileInformation(HWND hWin, OPENFILENAME *ofn);
 void add_item(DWORD dwNum, struct entry_wav *sWav);
+void extract_file(struct file *sFile, DWORD dwPos);
+
 
 int APIENTRY WinMainCRTStartup()
 {
@@ -88,21 +90,34 @@ LRESULT CALLBACK MainProc(HWND hWin,UINT message,WPARAM wParam,LPARAM lParam)
 				case IDC_QUIT:
                     SendMessage(hWin, WM_CLOSE, 0, 0);
                     break;
+                case ID_EXTRACT:
+                {
+                    int iPos = ListView_GetNextItem(hListView, -1, LVNI_SELECTED);
+                    if (iPos == -1)
+                    {
+                        MessageBoxA(NULL, "Load a file first", "ERROR", 0);
+                    }
+                    else
+                    {
+                        extract_file(&sFile, iPos);
+                    }
+                    break;
+                }
 				default:
 					break;
 			}
 			break;
         case WM_NOTIFY :
         {
-
-
             LPNMHDR pnmhdr;
-            pnmhdr=(LPNMHDR)lParam;
-            if(pnmhdr->hwndFrom == hListView && pnmhdr->code==NM_RCLICK)
+            pnmhdr = (LPNMHDR)lParam;
+            if (pnmhdr->hwndFrom == hListView && pnmhdr->code == NM_RCLICK)
             {
-                MessageBoxA(NULL, "dsd", "sdsd", 0);
-                //DialogBox(hInst, MAKEINTRESOURCE(IDD_CHOIX), hDlg,About);
-                return 0;
+                POINT lpPoint;
+                hSubMenu = CreatePopupMenu();
+                AppendMenu(hSubMenu, MF_STRING, ID_EXTRACT, "E&xtract");
+                GetCursorPos(&lpPoint);
+                TrackPopupMenu(hSubMenu, TPM_LEFTALIGN , lpPoint.x, lpPoint.y,NULL, hWin, NULL);
             }
             break;
         }
@@ -187,4 +202,33 @@ DWORD GetNbEntry(struct file *sFile)
     if (sFile->bMap)
         return *(DWORD*)sFile->bMap;
     return 0;
+}
+
+void extract_file(struct file *sFile, DWORD dwPos)
+{
+    BYTE buf[256];
+    LV_ITEM itemInfo = {0};
+    DWORD dwOffset;
+    DWORD dwSize;
+
+    itemInfo.iItem = dwPos;
+    itemInfo.iSubItem = 1;
+    itemInfo.mask = LVIF_TEXT;
+    itemInfo.cchTextMax = 256;
+    itemInfo.pszText = buf;
+    ListView_GetItem(hListView, &itemInfo);
+
+    sscanf(buf, "%X", &dwOffset);
+
+    itemInfo.iItem = dwPos;
+    itemInfo.iSubItem = 2;
+    itemInfo.mask = LVIF_TEXT;
+    itemInfo.cchTextMax = 256;
+    itemInfo.pszText = buf;
+    ListView_GetItem(hListView, &itemInfo);
+    sscanf(buf, "%d", &dwSize);
+
+    save_buf("wut.wav", sFile->bMap + dwOffset, dwSize);
+
+    //MessageBoxA(NULL, buf, buf, 0);
 }

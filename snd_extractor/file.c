@@ -53,7 +53,11 @@ BOOL save_buf(LPCTSTR lpFileName, PBYTE bBuf, DWORD dwSizeBuf)
         return FALSE;
     WriteFile(hFile, bBuf, dwSizeBuf, &dwByteWritten, NULL);
     if (dwByteWritten != dwSizeBuf)
+    {
+        CloseHandle(hFile);
         return FALSE;
+    }
+    CloseHandle(hFile);
     return TRUE;
 }
 
