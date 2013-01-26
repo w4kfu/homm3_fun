@@ -2,21 +2,19 @@ Snd\_extractor is a tool for extracting audio (.wav) files from .snd files that 
 
 ## Snd Format
 
-+0x00 : NbWavFile (DWORD)
-+0x04 : First WavEntry
-+0x34 : Second WavEntry
-... Repeat NbWavFile
-+0x.. : WavFile
+* +0x00 : NbWavFile (DWORD)
+* +0x04 : First WavEntry
+* +0x34 : Second WavEntry
+* ... Repeat NbWavFile
+* +0x.. : WavFile
 
 ## Wav Entry
 
-+0x00 : NameFile (BYTE [40])
-+0x28 : Offset (DWORD)
-+0x2C : Size (DWORD)
+* +0x00 : NameFile (BYTE [40])
+* +0x28 : Offset (DWORD)
+* +0x2C : Size (DWORD)
 
-## Example
-
-H3ab\_ahd.snd :
+## Example (H3ab\_ahd.snd)
 
 	+0x00000000 : 75 00 00 00 41 7A 75 72 61 74 74 6B 00 77 61 76 
 	+0x00000010 : 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
