@@ -26,7 +26,6 @@ Snd\_extractor is a tool for extracting audio (.wav) files from .snd files that 
 * Offset             : 0x000015F4 (5620)
 * Size               : 0x00003248 (12872)
 
-
 	+0x000015F4 : 52 49 46 46 40 32 00 00 57 41 56 45 66 6D 74 20 
 	+0x00001604 : 14 00 00 00 11 00 01 00 22 56 00 00 5C 2B 00 00 
 	+0x00001614 : 00 02 04 00 02 00 F9 03 66 61 63 74 04 00 00 00 
