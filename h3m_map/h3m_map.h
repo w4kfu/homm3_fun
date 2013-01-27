@@ -13,5 +13,6 @@
 #include <string.h>
 
 #include "file.h"
+#include "zlib.h"
 
 #endif // __H3M_MAP_H__
