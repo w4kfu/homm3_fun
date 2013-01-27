@@ -1,0 +1,24 @@
+//--------------------------------------
+//--- 010 Editor v4.0.3 Binary Template
+//
+// File: homm3_h3m.bt
+// Author: w4kfu
+// Revision: 001
+// Purpose:
+//--------------------------------------
+typedef struct
+{
+    uint32 LengthStr;
+    char   Str[LengthStr];
+}homm3String <bgcolor=cLtBlue>;
+
+struct h3m_FILE
+{
+    int     Version;
+    char    Unknown;
+    int     Width;
+    char    Underground;
+    homm3String MapName;
+    homm3String MapDescription;
+
+} file;

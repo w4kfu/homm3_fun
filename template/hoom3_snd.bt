@@ -1,0 +1,29 @@
+//--------------------------------------
+//--- 010 Editor v4.0.3 Binary Template
+//
+// File: hoom3_snd.bt
+// Author: w4kfu
+// Revision: 001
+// Purpose:
+//--------------------------------------
+typedef struct
+{
+    char   Name[40];
+    uint32 Offset;
+    uint32 Size;
+}homm3WavEntry;
+
+typedef struct(uint32 Size)
+{
+    uchar Buf[Size];
+}WavFile;
+
+struct SND_FILE
+{
+    local uint i;
+
+    uint32 NbEntry;
+    homm3WavEntry WavEntry[NbEntry];
+    for (i = 0; i < NbEntry; i++)
+        WavFile FileWav(WavEntry[i].Size);
+} file;
