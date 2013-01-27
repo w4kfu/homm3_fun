@@ -48,7 +48,7 @@ BOOL save_buf(LPCTSTR lpFileName, PBYTE bBuf, DWORD dwSizeBuf)
     DWORD dwByteWritten;
 
     if ((hFile = CreateFileA(lpFileName,(GENERIC_READ | GENERIC_WRITE),
-                             FILE_SHARE_READ | FILE_SHARE_READ,
+                             FILE_SHARE_READ | FILE_SHARE_WRITE,
                              NULL, CREATE_ALWAYS, 0, NULL)) == INVALID_HANDLE_VALUE)
         return FALSE;
     WriteFile(hFile, bBuf, dwSizeBuf, &dwByteWritten, NULL);
