@@ -12,7 +12,7 @@ typedef struct
     char   Str[LengthStr];
 }homm3String <bgcolor=cLtBlue>;
 
-struct h3m_FILE
+struct 
 {
     int     Version;
     char    Unknown;
@@ -21,4 +21,4 @@ struct h3m_FILE
     homm3String MapName;
     homm3String MapDescription;
 
-} file;
+} h3m_FILE;

@@ -18,7 +18,7 @@ typedef struct(uint32 Size)
     uchar Buf[Size];
 }WavFile;
 
-struct SND_FILE
+struct
 {
     local uint i;
 
@@ -26,4 +26,4 @@ struct SND_FILE
     homm3WavEntry WavEntry[NbEntry];
     for (i = 0; i < NbEntry; i++)
         WavFile FileWav(WavEntry[i].Size);
-} file;
+} snd_file;
