@@ -1,0 +1,32 @@
+//--------------------------------------
+//--- 010 Editor v4.0.3 Binary Template
+//
+// File: hoom3_h3m_compress.bt
+// Author: w4kfu
+// Revision: 1.0.0
+// Purpose:
+//--------------------------------------
+typedef struct
+{
+    uchar Signature[2];
+
+    if (Signature[0] != 0x1F && Signature[1] != 0x8B)
+    {
+        Warning("Appears to not be a h3m gzip file");
+        Exit(1);
+    }
+    uchar   Compression;
+    uint    Flags;
+    uint    ModificationTime;
+    uchar   ExtraFlags;
+    uchar   OperatingSystem;
+    // TODO : If FLG.FEXTRA is set, this gives the length of the optional extra field
+}   gzip_header;
+
+struct
+{
+    gzip_header Header;
+    uchar CompressedData[FileSize() - FTell() - 8];
+    uint32 CRC32;
+    uint32 RealSize;
+} h3m_file;
