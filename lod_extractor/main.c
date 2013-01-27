@@ -100,6 +100,8 @@ void ExtractArchive(LPCTSTR FileName)
     struct file sFile;
     struct lod_file *lod = NULL;
     DWORD dwCount;
+    BYTE  bPath[MAX_PATH];
+    PBYTE pbLast = NULL;
 
     if (open_and_map(FileName, &sFile) == FALSE)
     {
@@ -114,21 +116,28 @@ void ExtractArchive(LPCTSTR FileName)
         MessageBoxA(NULL, "[-] Appears to not be a homm3 lod (archive) file", "error", 0);
         return;
     }
-    CreateDirectory ("C:\\Work\\Code\\homm3_fun\\lod_extractor\\bin\\Release\\Extracted", NULL);
+    strncpy(bPath, FileName, MAX_PATH);
+    pbLast = strrchr(bPath, '\\');
+    if (!pbLast)
+        return;
+    *pbLast = 0;
+    strcat(bPath, "\\Extracted");
+    CreateDirectory (bPath, NULL);
     for (dwCount = 0; dwCount < lod->dwNbFile; dwCount++)
     {
-        ExtractFile(&sFile, &lod->h3file[dwCount]);
+        ExtractFile(bPath, &sFile, &lod->h3file[dwCount]);
     }
     clean_file(&sFile);
 }
 
-void ExtractFile(struct file *sFile, struct h3File* h3file)
+void ExtractFile(PBYTE pbPath, struct file *sFile, struct h3File* h3file)
 {
     BYTE    bPath[MAX_PATH];
     z_stream strm = {0};
     PBYTE pbOut;
 
-    strcpy(bPath, "C:\\Work\\Code\\homm3_fun\\lod_extractor\\bin\\Release\\Extracted\\");
+    strncpy(bPath, pbPath, MAX_PATH);
+    strcat(bPath, "\\");
     strcat(bPath, h3file->bName);
 
     pbOut = VirtualAlloc(NULL, h3file->dwRealSize, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
