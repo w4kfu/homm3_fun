@@ -1,0 +1,30 @@
+//--------------------------------------
+//--- 010 Editor v4.0.3 Binary Template
+//
+// File: homm3_lod.bt
+// Author: w4kfu
+// Revision: 1.0.0
+// Purpose:
+//--------------------------------------
+typedef struct
+{
+    char    Name[16];
+    uint32  Offset;
+    uint32  RealSize;
+    uint32  Type;
+    uint32  CompressedSize;
+} h3File;
+
+struct
+{
+    uint32 Signature;
+    if (Signature != 0x00444f4c)
+    {
+        Warning("Appears to not be a homm3 lod (archive) file");
+        Exit(1);
+    }
+    uint32  Type;
+    uint32  NbFile;
+    uchar   Unknow[80];
+    h3File  h3file[10000];
+} lod_file;
