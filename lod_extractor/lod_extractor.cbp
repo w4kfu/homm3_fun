@@ -39,14 +39,36 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="file.h" />
+		<Unit filename="lod_extractor.h" />
 		<Unit filename="main.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="main.h" />
 		<Unit filename="resource.h" />
 		<Unit filename="rsrc.rc">
 			<Option compilerVar="WINDRES" />
 		</Unit>
+		<Unit filename="zlib\adler32.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="zlib\crc32.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="zlib\crc32.h" />
+		<Unit filename="zlib\inffixed.h" />
+		<Unit filename="zlib\inflate.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="zlib\inflate.h" />
+		<Unit filename="zlib\inftrees.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="zlib\inftrees.h" />
+		<Unit filename="zlib\zconf.h" />
+		<Unit filename="zlib\zlib.h" />
+		<Unit filename="zlib\zutil.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="zlib\zutil.h" />
 		<Extensions>
 			<code_completion />
 			<envvars />

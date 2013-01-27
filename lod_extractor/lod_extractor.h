@@ -22,9 +22,28 @@
 #define windowBits 15
 #define ENABLE_ZLIB_GZIP 32
 
+struct h3File
+{
+  BYTE		bName[16];
+  DWORD	    dwOffset;
+  DWORD	    dwRealSize;
+  DWORD	    dwType;
+  DWORD	    dwCompSize;
+};
+
+struct lod_file
+{
+  DWORD	dwMagic;
+  DWORD	dwType;
+  DWORD	dwNbFile;
+  BYTE	bUnknown[80];
+  struct h3File	h3file[10000];
+};
+
 LRESULT CALLBACK MainProc(HWND hWin, UINT message, WPARAM wParam, LPARAM lParam);
-void ExtractMap(LPCTSTR FileName);
+void ExtractArchive(LPCTSTR FileName);
 void HandleFiles(WPARAM wParam);
+void ExtractFile(struct file *sFile, struct h3File* h3file);
 BOOL FixFileName(LPCTSTR FileName);
 
 #endif // __LOD_EXTRACTOR_H__

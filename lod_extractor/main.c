@@ -1,4 +1,4 @@
-#include "h3m_map.h"
+#include "lod_extractor.h"
 
 HINSTANCE	hInst;
 LPTSTR		lpszDialogCaption = "Homm3 LOD Archive Extractor";
@@ -57,7 +57,7 @@ void HandleFiles(WPARAM wParam)
     for (dwCount = 0; dwCount < dwNbDrop; dwCount++)
     {
         DragQueryFile(wParam, dwCount, bName, MAX_PATH);
-        ExtractMap(bName);
+        ExtractArchive(bName);
     }
     DragFinish(wParam);
 }
@@ -93,6 +93,60 @@ BOOL FixFileName(LPCTSTR FileName)
         return TRUE;
     }
     return FALSE;
+}
+
+void ExtractArchive(LPCTSTR FileName)
+{
+    struct file sFile;
+    struct lod_file *lod = NULL;
+    DWORD dwCount;
+
+    if (open_and_map(FileName, &sFile) == FALSE)
+    {
+        clean_file(&sFile);
+        MessageBoxA(NULL, "[-] open_and_map failed", "error", 0);
+        return;
+    }
+    lod = (struct lod_file*)sFile.bMap;
+    if (lod->dwMagic != 0x00444f4c)
+    {
+        clean_file(&sFile);
+        MessageBoxA(NULL, "[-] Appears to not be a homm3 lod (archive) file", "error", 0);
+        return;
+    }
+    CreateDirectory ("C:\\Work\\Code\\homm3_fun\\lod_extractor\\bin\\Release\\Extracted", NULL);
+    for (dwCount = 0; dwCount < lod->dwNbFile; dwCount++)
+    {
+        ExtractFile(&sFile, &lod->h3file[dwCount]);
+    }
+    clean_file(&sFile);
+}
+
+void ExtractFile(struct file *sFile, struct h3File* h3file)
+{
+    BYTE    bPath[MAX_PATH];
+    z_stream strm = {0};
+    PBYTE pbOut;
+
+    strcpy(bPath, "C:\\Work\\Code\\homm3_fun\\lod_extractor\\bin\\Release\\Extracted\\");
+    strcat(bPath, h3file->bName);
+
+    pbOut = VirtualAlloc(NULL, h3file->dwRealSize, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
+
+    strm.zalloc = Z_NULL;
+    strm.zfree = Z_NULL;
+    strm.opaque = Z_NULL;
+    strm.next_in = sFile->bMap + h3file->dwOffset;
+    strm.avail_in = h3file->dwCompSize;
+    strm.next_out = pbOut;
+    strm.avail_out = h3file->dwRealSize;
+
+    inflate(&strm, Z_NO_FLUSH);
+
+    save_buf(bPath, pbOut, h3file->dwRealSize);
+
+    VirtualFree(pbOut, 0, MEM_RELEASE);
+    inflateEnd(&strm);
 }
 
 void ExtractMap(LPCTSTR FileName)
