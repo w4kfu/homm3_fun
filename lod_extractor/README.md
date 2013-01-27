@@ -1,0 +1,1 @@
+lod\_extract is a tool for extracting archive (.lod) files found in Heroes of Might and Magic 3

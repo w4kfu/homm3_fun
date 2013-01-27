@@ -2,12 +2,12 @@
 <CodeBlocks_project_file>
 	<FileVersion major="1" minor="6" />
 	<Project>
-		<Option title="h3m_map" />
+		<Option title="lod_extractor" />
 		<Option pch_mode="2" />
 		<Option compiler="msvc8" />
 		<Build>
 			<Target title="Release">
-				<Option output="bin\Release\h3m_map" prefix_auto="1" extension_auto="1" />
+				<Option output="bin\Release\lod_extractor" prefix_auto="1" extension_auto="1" />
 				<Option object_output="obj\Release\" />
 				<Option type="0" />
 				<Option compiler="msvc8" />
@@ -18,7 +18,6 @@
 			</Target>
 		</Build>
 		<Compiler>
-			<Add option="/Ox" />
 			<Add option="/W3" />
 			<Add option="/GS-" />
 			<Add directory="$(#psdk.include)" />
@@ -40,36 +39,14 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="file.h" />
-		<Unit filename="h3m_map.h" />
 		<Unit filename="main.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="main.h" />
 		<Unit filename="resource.h" />
 		<Unit filename="rsrc.rc">
 			<Option compilerVar="WINDRES" />
 		</Unit>
-		<Unit filename="zlib\adler32.c">
-			<Option compilerVar="CC" />
-		</Unit>
-		<Unit filename="zlib\crc32.c">
-			<Option compilerVar="CC" />
-		</Unit>
-		<Unit filename="zlib\crc32.h" />
-		<Unit filename="zlib\inffixed.h" />
-		<Unit filename="zlib\inflate.c">
-			<Option compilerVar="CC" />
-		</Unit>
-		<Unit filename="zlib\inflate.h" />
-		<Unit filename="zlib\inftrees.c">
-			<Option compilerVar="CC" />
-		</Unit>
-		<Unit filename="zlib\inftrees.h" />
-		<Unit filename="zlib\zconf.h" />
-		<Unit filename="zlib\zlib.h" />
-		<Unit filename="zlib\zutil.c">
-			<Option compilerVar="CC" />
-		</Unit>
-		<Unit filename="zlib\zutil.h" />
 		<Extensions>
 			<code_completion />
 			<envvars />
