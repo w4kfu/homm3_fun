@@ -125,7 +125,10 @@ void ExtractArchive(LPCTSTR FileName)
     CreateDirectory (bPath, NULL);
     for (dwCount = 0; dwCount < lod->dwNbFile; dwCount++)
     {
-        ExtractFile(bPath, &sFile, &lod->h3file[dwCount]);
+        if (lod->h3file[dwCount].dwCompSize == 0)
+            ExtractFile2(bPath, &sFile, &lod->h3file[dwCount]);
+        else
+            ExtractFile(bPath, &sFile, &lod->h3file[dwCount]);
     }
     clean_file(&sFile);
 }
@@ -152,12 +155,6 @@ void ExtractFile(PBYTE pbPath, struct file *sFile, struct h3File* h3file)
     strm.next_out = pbOut;
     strm.avail_out = h3file->dwRealSize;
 
-    if (h3file->dwCompSize == 0)
-    {
-        memcpy(pbOut, sFile->bMap + h3file->dwOffset, h3file->dwRealSize);
-        goto write_to_file;
-    }
-
     if (inflateInit(&strm) != Z_OK)
     {
         MessageBoxA(NULL, "[-] inflateInit failed", "error", 0);
@@ -170,14 +167,61 @@ void ExtractFile(PBYTE pbPath, struct file *sFile, struct h3File* h3file)
         inflateEnd(&strm);
         if (err == Z_NEED_DICT || (err == Z_BUF_ERROR && strm.avail_in == 0))
         {
+            MessageBoxA(NULL, h3file->bName, "error", 0);
             VirtualFree(pbOut, 0, MEM_RELEASE);
             return;
         }
+        MessageBoxA(NULL, h3file->bName, "error", 0);
         return;
     }
     inflateEnd(&strm);
-
-write_to_file:
     save_buf(bPath, pbOut, h3file->dwRealSize);
     VirtualFree(pbOut, 0, MEM_RELEASE);
+}
+
+void ExtractFile2(PBYTE pbPath, struct file *sFile, struct h3File* h3file)
+{
+    z_stream strm = {0};
+    PBYTE pbOut;
+    HANDLE hAppend;
+    DWORD dwBytesWritten;
+    BYTE   bPath[MAX_PATH];
+
+    strncpy(bPath, pbPath, MAX_PATH);
+    strcat(bPath, "\\");
+    strcat(bPath, h3file->bName);
+
+    pbOut = VirtualAlloc(NULL, CHUNK, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
+    strm.zalloc = Z_NULL;
+    strm.zfree = Z_NULL;
+    strm.opaque = Z_NULL;
+    strm.next_in = sFile->bMap + h3file->dwOffset;
+    strm.avail_in = 0;
+
+    strm.next_out = pbOut;
+    if (inflateInit2(&strm, windowBits | ENABLE_ZLIB_GZIP) < 0)
+    {
+        VirtualFree(pbOut, 0, MEM_RELEASE);
+        MessageBoxA(NULL, "[-] inflateInit2 failed", "error", 0);
+        return;
+    }
+    hAppend = CreateFileA(bPath,
+              GENERIC_READ | GENERIC_WRITE,
+              FILE_SHARE_READ | FILE_SHARE_WRITE,
+              NULL,
+              CREATE_ALWAYS,
+              FILE_ATTRIBUTE_NORMAL,
+              NULL);
+    strm.avail_in = h3file->dwRealSize;
+    do
+    {
+        strm.avail_out = CHUNK;
+        inflate(&strm, Z_NO_FLUSH);
+        WriteFile(hAppend, pbOut, CHUNK - strm.avail_out, &dwBytesWritten, NULL);
+        strm.next_out = pbOut;
+    }
+    while (strm.avail_out == 0);
+    VirtualFree(pbOut, 0, MEM_RELEASE);
+    inflateEnd(&strm);
+    CloseHandle(hAppend);
 }

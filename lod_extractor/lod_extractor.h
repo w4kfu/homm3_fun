@@ -44,6 +44,7 @@ LRESULT CALLBACK MainProc(HWND hWin, UINT message, WPARAM wParam, LPARAM lParam)
 void ExtractArchive(LPCTSTR FileName);
 void HandleFiles(WPARAM wParam);
 void ExtractFile(PBYTE pbPath, struct file *sFile, struct h3File* h3file);
+void ExtractFile2(PBYTE pbPath, struct file *sFile, struct h3File* h3file);
 BOOL FixFileName(LPCTSTR FileName);
 
 #endif // __LOD_EXTRACTOR_H__
