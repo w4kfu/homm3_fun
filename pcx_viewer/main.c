@@ -32,6 +32,9 @@ LRESULT CALLBACK MainProc(HWND hWin, UINT message, WPARAM wParam, LPARAM lParam)
 				case IDC_QUIT:
                     SendMessage(hWin, WM_CLOSE, 0, 0);
                     break;
+                case IDC_EXTRACT:
+                    ExtractFromFolder(hWin);
+                    break;
 				default:
 					break;
 			}
@@ -48,11 +51,6 @@ LRESULT CALLBACK MainProc(HWND hWin, UINT message, WPARAM wParam, LPARAM lParam)
             return FALSE;
    }
    return TRUE;
-}
-
-HBITMAP LoadBitmapFromBuffer(char *buffer, int width, int height)
-{
-    return CreateBitmap(width, height, 3, 12, buffer);
 }
 
 void HandleFiles(HWND hWin, WPARAM wParam)
@@ -135,4 +133,159 @@ void DrawPCX(HWND hWin, LPCTSTR FileName)
         }
     }
     ReleaseDC(hWin, hdc);
+}
+
+void ExtractFromFolder(HWND hWin)
+{
+    BROWSEINFO bi;
+    BYTE szDisplayName[MAX_PATH];
+    LPITEMIDLIST pidl;
+    BYTE szPathName[MAX_PATH];
+
+    ZeroMemory(&bi, sizeof(bi));
+    bi.hwndOwner = hWin;
+    bi.pidlRoot = NULL;
+    bi.pszDisplayName = szDisplayName;
+    bi.lpszTitle = "Please select a folder for storing received files :";
+    bi.ulFlags = BIF_RETURNONLYFSDIRS;
+    bi.lParam = NULL;
+    bi.iImage = 0;
+
+    pidl = SHBrowseForFolderA(&bi);
+    if (pidl != NULL)
+    {
+        BOOL bRet = SHGetPathFromIDList(pidl, szPathName);
+        strcat(szPathName, "\\*");
+        ScanFolder(szPathName);
+    }
+}
+
+PBYTE strrstr(PBYTE haystack, PBYTE needle)
+{
+    PBYTE result = NULL;
+    PBYTE p;
+
+    if (*needle == '\0')
+        return haystack;
+
+    while(1)
+    {
+        p = strstr(haystack, needle);
+        if (p == NULL)
+            break;
+        result = p;
+        haystack = p + 1;
+    }
+    return result;
+}
+
+BOOL FixFileName(LPCTSTR FileName)
+{
+    PBYTE ph3m = NULL;
+
+    if ((ph3m = strrstr(FileName, "pcx")))
+    {
+        *ph3m = 'b';
+        *(ph3m + 1) = 'm';
+        *(ph3m + 2) = 'p';
+        return TRUE;
+    }
+    return FALSE;
+}
+
+void ScanFolder(LPCTSTR FolderName)
+{
+    WIN32_FIND_DATA ffd;
+    HANDLE hFind = INVALID_HANDLE_VALUE;
+    BYTE bFilePath[MAX_PATH];
+    struct h3pcx homm3pcx;
+
+    hFind = FindFirstFile(FolderName, &ffd);
+    if (hFind == INVALID_HANDLE_VALUE)
+    {
+        MessageBoxA(NULL, FolderName, "PO", 0);
+        return;
+    }
+    do
+    {
+        if (ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+        {
+
+        }
+        else
+        {
+            if (strstr(ffd.cFileName, ".pcx"))
+            {
+                memset(bFilePath, 0, MAX_PATH);
+                strncpy(bFilePath, FolderName, strlen(FolderName) - 2);
+                strcat(bFilePath, "\\");
+                strcat(bFilePath, ffd.cFileName);
+                if (open_and_map(bFilePath, &sFile) == FALSE)
+                {
+                    clean_file(&sFile);
+                    MessageBoxA(NULL, bFilePath, "[-] open_and_map failed", 0);
+                }
+                else
+                {
+                    homm3pcx.dwBitmapSize = *(DWORD*)sFile.bMap;
+                    homm3pcx.dwWidth = *(DWORD*)(sFile.bMap + 4);
+                    homm3pcx.dwHeight = *(DWORD*)(sFile.bMap + 8);
+                    homm3pcx.bBitmap = (BYTE*)(sFile.bMap + 3 * sizeof(DWORD));
+
+                    if (homm3pcx.dwBitmapSize != (homm3pcx.dwWidth * homm3pcx.dwHeight * 3))
+                    {
+                        BMP NewBmp;
+                        PBYTE   NewBGR = NULL;
+                        struct pcx_color *pal;
+                        DWORD x, y;
+                        int i;
+
+                        NewBmp.width = homm3pcx.dwWidth;
+                        NewBmp.height = homm3pcx.dwHeight;
+                        homm3pcx.pal = (struct pcx_color*)(sFile.bMap + (3 * sizeof(DWORD)) + (homm3pcx.dwWidth * homm3pcx.dwHeight));
+                        NewBGR = VirtualAlloc(NULL, (homm3pcx.dwWidth * homm3pcx.dwHeight) * 3, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
+
+                        for (y = 0; y < homm3pcx.dwHeight; y++)
+                        {
+                            for (x = 0; x < homm3pcx.dwWidth; x++)
+                            {
+                                pal = (struct pcx_color *)&homm3pcx.pal[homm3pcx.bBitmap[x + (y * homm3pcx.dwWidth)]];
+                                //SetPixel(hdc, x, y, RGB(pal->r, pal->g, pal->b));
+                                i = (x + (y * homm3pcx.dwWidth)) * 3;
+                                NewBGR[i + 0] = pal->b;
+                                NewBGR[i + 1] = pal->g;
+                                NewBGR[i + 2] = pal->r;
+                            }
+                        }
+                        /*for (i = 0; i < NewBmp.width * NewBmp.height; i++)
+                        {
+
+                        }
+
+                        pal = (struct pcx_color *)&homm3pcx.pal[NewBmp.data[x + (y * NewBmp.width)]];*/
+                        NewBmp.data = NewBGR;
+                        FixFileName(bFilePath);
+                        bmp_save(&NewBmp, bFilePath);
+                        VirtualFree(NewBGR, 0, MEM_RELEASE);
+                    }
+                    else
+                    {
+                        BMP NewBmp;
+
+                        NewBmp.width = homm3pcx.dwWidth;
+                        NewBmp.height = homm3pcx.dwHeight;
+                        NewBmp.data = (BYTE*)(sFile.bMap + 3 * sizeof(DWORD));
+                        FixFileName(bFilePath);
+                        bmp_save(&NewBmp, bFilePath);
+                    }
+
+                    //DrawPCX(NULL, bFilePath);
+                }
+
+            }
+         //filesize.LowPart = ffd.nFileSizeLow;
+         //filesize.HighPart = ffd.nFileSizeHigh;
+         //_tprintf(TEXT("  %s   %ld bytes\n"), ffd.cFileName, filesize.QuadPart);
+        }
+    } while (FindNextFile(hFind, &ffd));
 }
