@@ -150,68 +150,13 @@ void ExtractFile(PBYTE pbPath, struct file *sFile, struct h3File* h3file)
     strm.next_out = pbOut;
     strm.avail_out = h3file->dwRealSize;
 
+    if (inflateInit(&strm) != Z_OK)
+        return;
+
     inflate(&strm, Z_NO_FLUSH);
 
     save_buf(bPath, pbOut, h3file->dwRealSize);
 
     VirtualFree(pbOut, 0, MEM_RELEASE);
     inflateEnd(&strm);
-}
-
-void ExtractMap(LPCTSTR FileName)
-{
-    z_stream strm = {0};
-    PBYTE pbOut;
-    struct file sFile;
-    DWORD dwLastError = 0;
-    HANDLE hAppend;
-    DWORD dwBytesWritten;
-    DWORD dwSize;
-
-    if (open_and_map(FileName, &sFile) == FALSE)
-    {
-        clean_file(&sFile);
-        MessageBoxA(NULL, "[-] open_and_map failed", "error", 0);
-        return;
-    }
-    dwSize = GetFileSize(sFile.hFile, NULL);
-    pbOut = VirtualAlloc(NULL, dwSize, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
-    strm.zalloc = Z_NULL;
-    strm.zfree = Z_NULL;
-    strm.opaque = Z_NULL;
-    strm.next_in = sFile.bMap;
-    strm.avail_in = 0;
-    strm.next_out = pbOut;
-    if (inflateInit2(&strm, windowBits | ENABLE_ZLIB_GZIP) < 0)
-    {
-        clean_file(&sFile);
-        MessageBoxA(NULL, "[-] inflateInit2 failed", "error", 0);
-        return;
-    }
-    if (FixFileName(FileName) == FALSE)
-    {
-        clean_file(&sFile);
-        MessageBoxA(NULL, "[-] Can't find h3m extension", "error", 0);
-        return;
-    }
-    hAppend = CreateFileA(FileName,
-              GENERIC_READ | GENERIC_WRITE,
-              FILE_SHARE_READ | FILE_SHARE_WRITE,
-              NULL,
-              CREATE_ALWAYS,
-              FILE_ATTRIBUTE_NORMAL,
-              NULL);
-    strm.avail_in = dwSize;
-    do
-    {
-        strm.avail_out = dwSize;
-        inflate(&strm, Z_NO_FLUSH);
-        WriteFile(hAppend, pbOut, dwSize - strm.avail_out, &dwBytesWritten, NULL);
-        strm.next_out = pbOut;
-    }
-    while (strm.avail_out == 0);
-    VirtualFree(pbOut, 0, MEM_RELEASE);
-    inflateEnd(&strm);
-    CloseHandle(hAppend);
-    clean_file(&sFile);
 }
