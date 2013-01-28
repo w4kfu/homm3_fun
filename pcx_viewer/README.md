@@ -1,0 +1,1 @@
+PCX viewer will display picture from .pcx file found in Heros of Might and Magic 3
