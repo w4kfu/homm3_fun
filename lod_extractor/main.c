@@ -125,7 +125,7 @@ void ExtractArchive(LPCTSTR FileName)
     CreateDirectory (bPath, NULL);
     for (dwCount = 0; dwCount < lod->dwNbFile; dwCount++)
     {
-        if (lod->h3file[dwCount].dwCompSize == 0)
+        if (lod->h3file[dwCount].dwCompSize == 0 && *(sFile.bMap + lod->h3file[dwCount].dwOffset) == 0x1F && *(sFile.bMap + lod->h3file[dwCount].dwOffset + 1) == 0x8B)
             ExtractFile2(bPath, &sFile, &lod->h3file[dwCount]);
         else
             ExtractFile(bPath, &sFile, &lod->h3file[dwCount]);
@@ -145,6 +145,12 @@ void ExtractFile(PBYTE pbPath, struct file *sFile, struct h3File* h3file)
     strcat(bPath, h3file->bName);
 
     pbOut = VirtualAlloc(NULL, h3file->dwRealSize, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
+
+    if (h3file->dwCompSize == 0)
+    {
+        memcpy(pbOut, sFile->bMap + h3file->dwOffset, h3file->dwRealSize);
+        goto save_and_clean;
+    }
 
     strm.zalloc = Z_NULL;
     strm.zfree = Z_NULL;
@@ -175,6 +181,7 @@ void ExtractFile(PBYTE pbPath, struct file *sFile, struct h3File* h3file)
         return;
     }
     inflateEnd(&strm);
+save_and_clean:
     save_buf(bPath, pbOut, h3file->dwRealSize);
     VirtualFree(pbOut, 0, MEM_RELEASE);
 }
