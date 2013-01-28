@@ -135,6 +135,7 @@ void ExtractFile(PBYTE pbPath, struct file *sFile, struct h3File* h3file)
     BYTE    bPath[MAX_PATH];
     z_stream strm = {0};
     PBYTE pbOut;
+    int    err;
 
     strncpy(bPath, pbPath, MAX_PATH);
     strcat(bPath, "\\");
@@ -144,19 +145,39 @@ void ExtractFile(PBYTE pbPath, struct file *sFile, struct h3File* h3file)
 
     strm.zalloc = Z_NULL;
     strm.zfree = Z_NULL;
-    strm.opaque = Z_NULL;
+
     strm.next_in = sFile->bMap + h3file->dwOffset;
     strm.avail_in = h3file->dwCompSize;
+
     strm.next_out = pbOut;
     strm.avail_out = h3file->dwRealSize;
 
+    if (h3file->dwCompSize == 0)
+    {
+        memcpy(pbOut, sFile->bMap + h3file->dwOffset, h3file->dwRealSize);
+        goto write_to_file;
+    }
+
     if (inflateInit(&strm) != Z_OK)
+    {
+        MessageBoxA(NULL, "[-] inflateInit failed", "error", 0);
+        VirtualFree(pbOut, 0, MEM_RELEASE);
         return;
+    }
 
-    inflate(&strm, Z_NO_FLUSH);
-
-    save_buf(bPath, pbOut, h3file->dwRealSize);
-
-    VirtualFree(pbOut, 0, MEM_RELEASE);
+    err = inflate(&strm, Z_FINISH);
+    if (err != Z_STREAM_END) {
+        inflateEnd(&strm);
+        if (err == Z_NEED_DICT || (err == Z_BUF_ERROR && strm.avail_in == 0))
+        {
+            VirtualFree(pbOut, 0, MEM_RELEASE);
+            return;
+        }
+        return;
+    }
     inflateEnd(&strm);
+
+write_to_file:
+    save_buf(bPath, pbOut, h3file->dwRealSize);
+    VirtualFree(pbOut, 0, MEM_RELEASE);
 }
