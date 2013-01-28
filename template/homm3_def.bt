@@ -1,0 +1,51 @@
+//--------------------------------------
+//--- 010 Editor v4.0.3 Binary Template
+//
+// File: homm3_def.bt
+// Author: w4kfu
+// Revision: 1.0.0
+// Purpose:
+//--------------------------------------
+typedef struct
+{
+    uchar r;
+    uchar g;
+    uchar b;
+}h3rgb;
+
+typedef struct
+{
+    uint32 Type;
+    uint32 Width;
+    uint32 Height;
+    uint32 SeqCount;
+    h3rgb Palette[256];
+} defHeader;
+
+typedef struct
+{
+    char Name[0xD];
+}defNameSeq;
+
+typedef struct
+{
+    uint32 Type;
+    uint32 Length;
+    uint32 Unknow1;
+    uint32 Unknow2;
+    defNameSeq Names[Length];
+    uint32 Offsets[Length];
+} defSeqHeader;
+
+typedef struct
+{
+    uint32 Size;
+    uint32 Type;
+} defFrameHeader;
+
+struct
+{
+    defHeader    header;
+    defSeqHeader seqheader[header.SeqCount];
+    defFrameHeader frameheader;
+} defFile;
